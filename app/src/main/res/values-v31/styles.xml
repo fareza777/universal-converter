@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.UniversalConverter" parent="Theme.UniversalConverter.Base">
+        <item name="android:windowSplashScreenBackground">@color/paper</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_splash_icon</item>
+        <item name="android:windowSplashScreenAnimationDuration">280</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/paper</item>
+    </style>
+
+    <style name="Theme.UniversalConverter.Starting" parent="Theme.UniversalConverter.Base">
+        <item name="android:windowSplashScreenBackground">@color/paper</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_splash_icon</item>
+        <item name="android:windowSplashScreenAnimationDuration">220</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/paper</item>
+        <item name="postSplashScreenTheme">@style/Theme.UniversalConverter</item>
+    </style>
+</resources>

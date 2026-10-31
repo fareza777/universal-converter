@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Universal Converter — Privacy Policy</title>
+<style>
+  :root {
+    --ink: #17140f;
+    --muted: #60594c;
+    --paper: #f5f0e7;
+    --ivory: #fbf7f0;
+    --line: #dcd2c1;
+    --ember: #b44724;
+    --sage: #4c5c49;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 56px 24px 80px; }
+  .eyebrow { color: var(--ember); font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  h1 { font: 44px/1.08 Georgia, "Times New Roman", serif; margin: 12px 0 10px; letter-spacing: -0.5px; }
+  .date { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
+  .lede {
+    background: var(--ivory);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 22px 24px;
+    font-size: 18px;
+  }
+  h2 { font: 28px/1.2 Georgia, "Times New Roman", serif; margin: 40px 0 10px; }
+  h3 { font-size: 17px; margin: 24px 0 8px; }
+  p, li { color: #302b23; }
+  ul { padding-left: 22px; }
+  li { margin: 6px 0; }
+  a { color: var(--ember); }
+  .card { background: var(--ivory); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; margin: 14px 0; }
+  .note { border-left: 4px solid var(--ember); background: var(--ivory); padding: 16px 18px; border-radius: 0 14px 14px 0; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 15px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="eyebrow">Universal Converter</div>
+  <h1>Privacy Policy</h1>
+  <div class="date">Effective 31 October 2026 · Android package <code>com.universalconverter.pro</code></div>
+
+  <div class="lede">
+    Universal Converter converts files on your device. Your conversion files and their contents are <strong>never uploaded</strong>.
+    The app has no account system and no analytics or crash-reporting SDK of its own. The free version is supported by
+    Google AdMob advertising and offers an optional one-time Remove Ads purchase through Google Play Billing.
+  </div>
+
+  <h2>What the app accesses</h2>
+  <div class="card">
+    <ul>
+      <li><strong>Files you choose.</strong> Files are opened through the Android system picker, share sheet or drag-and-drop. They are copied into the app's private vault so conversion can continue reliably. The source stays on your device.</li>
+      <li><strong>File metadata.</strong> Name, size, detected format and, for JPEG captures, optional EXIF metadata (date, camera, GPS) when “Keep capture metadata” is on. This stays local.</li>
+      <li><strong>Conversion reports.</strong> A local history record (source, target, size, duration, SHA-256 checksum, pipeline and warnings) is stored on the device.</li>
+      <li><strong>Preferences.</strong> Theme, accent, defaults and onboarding state are stored in Android SharedPreferences.</li>
+    </ul>
+  </div>
+  <p>None of the above is sent to the developer or to an ad server.</p>
+
+  <h2>Conversion processing</h2>
+  <p>The conversion engine is native code running on your phone. It reads only the files you select and writes outputs to the app's private vault (and optionally a copy to Downloads). Files are not uploaded, and the conversion engine does not require network access.</p>
+
+  <h2>Advertising (Google AdMob)</h2>
+  <p>The free version can show an adaptive banner above the app's bottom navigation, a full-screen interstitial after several completed conversions (frequency-capped), and an opt-in rewarded ad that unlocks 24 hours without banners or interstitials.</p>
+  <p>Google Mobile Ads may process:</p>
+  <ul>
+    <li>device or other identifiers (advertising ID, app set ID),</li>
+    <li>approximate location derived from the IP address,</li>
+    <li>app and ad interactions (impressions and clicks),</li>
+    <li>diagnostics and performance information.</li>
+  </ul>
+  <p>This data is used by Google for advertising, measurement, fraud prevention and service operation, and may be shared with Google's advertising partners. Data is transmitted over HTTPS. The developer does not receive your conversion files or their contents.</p>
+  <div class="note">
+    Consent is collected through Google User Messaging Platform (UMP) where required, such as the EEA, UK and Switzerland.
+    You can reopen advertising privacy options in Settings when the form is available, and you can reset or delete your
+    advertising ID in Android system settings.
+  </div>
+  <p>Google privacy policy: <a href="https://policies.google.com/privacy" rel="noopener">policies.google.com/privacy</a></p>
+
+  <h2>Purchases (Google Play Billing)</h2>
+  <p>The optional one-time Remove Ads purchase (US$4.99 or the local Play Store price) is processed by Google Play. Google handles payment details; the app never sees your card or bank information. The app receives the product ID, purchase state and purchase token to confirm and restore the entitlement. The app stores only a local “Remove Ads owned” flag and the purchase token. There are no developer servers.</p>
+  <p>Google Play Terms of Service: <a href="https://play.google.com/about/play-terms/" rel="noopener">play.google.com/about/play-terms</a></p>
+
+  <h2>Sharing and saving</h2>
+  <p>When you tap Share, the Android system share sheet opens and you choose the destination. The file is exposed through a scoped FileProvider grant. “Save copy” uses Android MediaStore to write a copy to <code>Downloads/Universal Converter</code> on Android 10 and later. These are local system operations.</p>
+
+  <h2>Notifications and foreground service</h2>
+  <p>Notification permission is optional and is used for conversion progress and completion. A foreground service keeps long conversions running when you leave the app; Android displays the required ongoing notification. Both operate only on local files.</p>
+
+  <h2>Retention and deletion</h2>
+  <ul>
+    <li>Conversion files, the inbox, history and preferences remain in private storage until you delete them in the Library/History, clear the vault or history in Settings, clear app data, or uninstall the app.</li>
+    <li>Copies you save to Downloads remain under your control.</li>
+    <li>Advertising consent choices can be changed in Settings (Ad privacy options) where available.</li>
+    <li>There is no account to delete. For Google-held ad or purchase data, use your Google account privacy controls or contact Google.</li>
+  </ul>
+
+  <h2>Children</h2>
+  <p>Universal Converter is a general-purpose utility and is not directed to children. The app does not knowingly collect personal information from children. Advertising requests are tagged as not directed to children under the age of consent. If you believe a child has provided personal information, contact the developer through the Play Store support channel.</p>
+
+  <h2>Security</h2>
+  <p>Files are protected by Android's app sandbox. Shared-storage access uses the system picker and FileProvider. Cleartext network traffic is disabled; Google SDK traffic uses HTTPS. The app does not declare or use a server.</p>
+
+  <h2>Changes</h2>
+  <p>If data practices change, this policy will be updated with a new effective date and included with the app update. Material changes to advertising, accounts or data collection will be reflected in the Google Play Data Safety section.</p>
+
+  <h2>Contact</h2>
+  <p>For privacy questions, use the developer support email displayed on the Universal Converter Google Play listing. The developer responds through the Play Store support channel.</p>
+
+  <footer>
+    Universal Converter adapts the format taxonomy and conversion ideas of the MIT-licensed Filee project.
+    The Android conversion engine is native Kotlin and runs on-device.
+  </footer>
+</main>
+</body>
+</html>

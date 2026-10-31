@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.UniversalConverter.Base" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/paper</item>
+        <item name="android:colorAccent">@color/ember</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.UniversalConverter" parent="Theme.UniversalConverter.Base" />
+
+    <style name="Theme.UniversalConverter.Starting" parent="Theme.UniversalConverter.Base">
+        <item name="android:windowBackground">@drawable/splash_window</item>
+    </style>
+</resources>

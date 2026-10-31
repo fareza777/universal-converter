@@ -1,0 +1,23 @@
+# Signing material and local configuration
+keystore.properties
+keystore/
+local.properties
+*.jks
+*.keystore
+
+# Build output
+build/
+app/build/
+.gradle/
+.kotlin/
+.idea/
+*.iml
+app/release/
+*.log
+
+# Internal QA evidence and raw captures (privacy + size)
+qa/
+store/raw/
+
+# Large Play deobfuscation file, regenerated locally
+release/mapping-release.txt

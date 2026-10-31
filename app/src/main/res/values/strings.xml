@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Universal Converter</string>
+    <string name="notif_channel_name">Conversions</string>
+    <string name="notif_channel_desc">Progress for conversions running in the background</string>
+</resources>

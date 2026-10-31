@@ -1,0 +1,9 @@
+Universal Converter
+
+This application adapts the format taxonomy, conversion concepts and selected algorithm ideas from Filee (https://github.com/KnifeLemon/Filee), Copyright (c) 2026 Myeonggu Kim (KnifeLemon) and Filee contributors, licensed under the MIT License. The full text is included as Filee-MIT.txt.
+
+Engine and UI are a native Kotlin implementation for Android. AndroidX, Jetpack Compose, PDFBox-Android, AndroidSVG, Apache Commons Compress and Kotlin are licensed under Apache License 2.0. Jsoup is licensed under the MIT License. Instrument Serif and Manrope are licensed under the SIL Open Font License 1.1.
+
+Google Mobile Ads SDK, Google Play Billing Library and Google User Messaging Platform are provided by Google LLC under the Google APIs Terms of Service (https://developers.google.com/terms) and Google Play Terms of Service (https://play.google.com/about/play-terms/). They are used only for optional advertising, consent and the Remove Ads purchase. Google Privacy Policy: https://policies.google.com/privacy
+
+Conversions are performed entirely on the device; conversion files are never uploaded. Network access is used only by optional ads and Google Play billing. See the app's privacy policy for details.

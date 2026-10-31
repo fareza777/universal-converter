@@ -1,0 +1,10 @@
+Google Mobile Ads SDK, Google Play Billing Library and Google User Messaging Platform
+
+Provided by Google LLC. Use of these SDKs is governed by the Google APIs Terms of Service (https://developers.google.com/terms) and the Google Play Terms of Service (https://play.google.com/about/play-terms/).
+
+They are used in Universal Converter only for optional advertising, advertising consent and the one-time Remove Ads purchase. Conversion files are never uploaded to Google or to the developer.
+
+Google Privacy Policy: https://policies.google.com/privacy
+AdMob: https://admob.google.com
+Play Billing: https://developer.android.com/google/play/billing
+User Messaging Platform: https://developers.google.com/admob/android/privacy

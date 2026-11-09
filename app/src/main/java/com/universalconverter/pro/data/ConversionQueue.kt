@@ -5,7 +5,9 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.content.ContextCompat
 import com.universalconverter.pro.core.convert.ConversionOptions
+import com.universalconverter.pro.core.convert.ConversionOptionsJson
 import com.universalconverter.pro.core.convert.TargetSpec
+import com.universalconverter.pro.core.formats.FormatFamily
 import com.universalconverter.pro.core.detect.DetectionResult
 import com.universalconverter.pro.core.engine.ConversionEngine
 import com.universalconverter.pro.core.engine.ConversionOutcome
@@ -19,6 +21,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 import java.util.Collections
 import java.util.UUID
@@ -68,10 +72,21 @@ class ConversionQueue(
     private val engine: ConversionEngine,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val _items = MutableStateFlow<List<QueueItem>>(emptyList())
+    private val pendingFile = File(context.filesDir, "pending_queue.json")
+    private val _items = MutableStateFlow(loadPending())
     val items: StateFlow<List<QueueItem>> = _items.asStateFlow()
     private var runner: Job? = null
     private val cancelRequests = Collections.synchronizedSet(HashSet<String>())
+
+    fun resumePending(): Int {
+        val pending = _items.value.count { it.status == JobStatus.QUEUED }
+        if (pending > 0) {
+            persistPending()
+            startForegroundService()
+            startRunner()
+        }
+        return pending
+    }
 
     fun enqueue(jobs: List<NewJob>): List<String> {
         if (jobs.isEmpty()) return emptyList()
@@ -88,6 +103,7 @@ class ConversionQueue(
             )
         }
         _items.update { current -> current + created }
+        persistPending()
         startForegroundService()
         startRunner()
         return created.map { it.id }
@@ -134,14 +150,17 @@ class ConversionQueue(
 
     fun removeFinished() {
         _items.update { items -> items.filterNot { it.finished } }
+        persistPending()
     }
 
     fun clearAllFinished() {
         _items.update { items -> items.filterNot { it.finished } }
+        persistPending()
     }
 
     fun dismiss(id: String) {
         _items.update { items -> items.filterNot { it.id == id && it.finished } }
+        persistPending()
     }
 
     private fun startRunner() {
@@ -241,8 +260,98 @@ class ConversionQueue(
     }
 
     private fun update(id: String, transform: (QueueItem) -> QueueItem) {
-        _items.update { items -> items.map { if (it.id == id) transform(it) else it } }
+        var becameFinished = false
+        _items.update { items ->
+            items.map { item ->
+                if (item.id != id) return@map item
+                val next = transform(item)
+                if (next.finished && !item.finished) becameFinished = true
+                next
+            }
+        }
+        if (becameFinished) persistPending()
     }
+
+    private fun loadPending(): List<QueueItem> {
+        if (!pendingFile.isFile) return emptyList()
+        return runCatching {
+            val array = JSONArray(pendingFile.readText())
+            buildList {
+                for (i in 0 until array.length()) {
+                    val json = array.optJSONObject(i) ?: continue
+                    val path = json.optString("sourcePath")
+                    val file = File(path)
+                    if (path.isBlank() || !file.isFile) continue
+                    val target = targetFromJson(json.optJSONObject("target") ?: continue) ?: continue
+                    val optionsJson = json.optJSONObject("options") ?: continue
+                    add(
+                        QueueItem(
+                            id = json.optString("id").ifBlank { UUID.randomUUID().toString() },
+                            sourceFile = file,
+                            sourceName = json.optString("sourceName", file.name),
+                            sourceFormatId = json.optString("sourceFormatId", "bin"),
+                            sourceFormatLabel = json.optString("sourceFormatLabel", "Unknown"),
+                            target = target,
+                            options = ConversionOptionsJson.fromJson(optionsJson),
+                            createdAt = json.optLong("createdAt", System.currentTimeMillis()),
+                            status = JobStatus.QUEUED,
+                            stage = "Resuming",
+                        ),
+                    )
+                }
+            }
+        }.getOrDefault(emptyList())
+    }
+
+    @Synchronized
+    private fun persistPending() {
+        val pending = _items.value.filter { it.status == JobStatus.QUEUED || it.status == JobStatus.RUNNING }
+        val array = JSONArray()
+        pending.forEach { item ->
+            array.put(
+                JSONObject().apply {
+                    put("id", item.id)
+                    put("sourcePath", item.sourceFile.absolutePath)
+                    put("sourceName", item.sourceName)
+                    put("sourceFormatId", item.sourceFormatId)
+                    put("sourceFormatLabel", item.sourceFormatLabel)
+                    put("target", targetToJson(item.target))
+                    put("options", ConversionOptionsJson.toJson(item.options))
+                    put("createdAt", item.createdAt)
+                },
+            )
+        }
+        runCatching {
+            val temp = File(pendingFile.parentFile, "pending_queue.tmp")
+            temp.writeText(array.toString())
+            temp.copyTo(pendingFile, overwrite = true)
+            temp.delete()
+        }
+    }
+
+    private fun targetToJson(target: TargetSpec): JSONObject = JSONObject().apply {
+        put("id", target.id)
+        put("label", target.label)
+        put("blurb", target.blurb)
+        put("extension", target.extension)
+        put("family", target.family.name)
+        put("formatId", target.formatId ?: JSONObject.NULL)
+        put("kind", target.kind.name)
+    }
+
+    private fun targetFromJson(json: JSONObject): TargetSpec? = runCatching {
+        TargetSpec(
+            id = json.optString("id"),
+            label = json.optString("label"),
+            blurb = json.optString("blurb"),
+            extension = json.optString("extension"),
+            family = FormatFamily.valueOf(json.optString("family", FormatFamily.DOCUMENT.name)),
+            formatId = if (json.isNull("formatId")) null else json.optString("formatId").takeIf { it.isNotBlank() },
+            kind = com.universalconverter.pro.core.convert.TargetKind.valueOf(
+                json.optString("kind", com.universalconverter.pro.core.convert.TargetKind.FILE.name),
+            ),
+        )
+    }.getOrNull()
 
     private fun startForegroundService() {
         try {

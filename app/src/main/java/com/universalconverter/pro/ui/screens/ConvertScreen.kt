@@ -83,7 +83,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.universalconverter.pro.core.convert.TargetSpec
 import com.universalconverter.pro.core.formats.FormatFamily
+import com.universalconverter.pro.core.formats.FormatRegistry
 import com.universalconverter.pro.data.JobStatus
+import com.universalconverter.pro.data.LibraryItem
 import com.universalconverter.pro.data.QueueItem
 import com.universalconverter.pro.ui.DraftItem
 import com.universalconverter.pro.ui.MainViewModel
@@ -116,11 +118,14 @@ fun ConvertScreen(
     onOpenQueue: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenStudio: () -> Unit,
+    onOpenLibrary: () -> Unit,
+    onOpenRecent: (LibraryItem) -> Unit,
 ) {
     val palette = UC.palette
     val state by viewModel.ui.collectAsStateWithLifecycle()
     val queue by viewModel.queueItems.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+    val library by viewModel.libraryItems.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var targetSheetItem by remember { mutableStateOf<DraftItem?>(null) }
     var showOptions by remember { mutableStateOf(false) }
@@ -179,6 +184,7 @@ fun ConvertScreen(
     }
 
     val activeQueue = queue.filter { it.status == JobStatus.QUEUED || it.status == JobStatus.RUNNING }
+    val recent = library.filter { !it.isDirectory }.take(3)
 
     PaperBackground(
         modifier = Modifier
@@ -279,6 +285,9 @@ fun ConvertScreen(
                     }
                     item { FamilyChips() }
                     item { StudioBanner(onOpenStudio) }
+                    if (recent.isNotEmpty()) {
+                        item { RecentStrip(recent, onOpen = onOpenRecent, onViewAll = onOpenLibrary) }
+                    }
                 } else {
                     item {
                         Column {
@@ -678,6 +687,71 @@ private fun QueueProgressCard(items: List<QueueItem>, onOpen: () -> Unit) {
                 color = palette.ember,
                 trackColor = palette.paper.copy(alpha = 0.14f),
             )
+        }
+    }
+}
+
+
+@Composable
+private fun RecentStrip(
+    recent: List<LibraryItem>,
+    onOpen: (LibraryItem) -> Unit,
+    onViewAll: () -> Unit,
+) {
+    val palette = UC.palette
+    Column {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text("Recent", style = MaterialTheme.typography.titleSmall, color = palette.ink)
+            Spacer(Modifier.weight(1f))
+            Text(
+                "View all",
+                style = MaterialTheme.typography.labelMedium,
+                color = palette.ember,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .clickable(onClick = onViewAll)
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(
+            Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            recent.forEach { item ->
+                val family = FormatRegistry.findForFileName(item.displayName)?.family ?: FormatFamily.DOCUMENT
+                Row(
+                    modifier = Modifier
+                        .width(196.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(palette.ivory)
+                        .border(1.dp, palette.line, RoundedCornerShape(16.dp))
+                        .clickable { onOpen(item) }
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(Modifier.size(46.dp).clip(RoundedCornerShape(12.dp))) {
+                        AsyncThumbnail(item.file, family, Modifier.fillMaxSize(), sizePx = 180, rounded = 12.dp)
+                    }
+                    Spacer(Modifier.width(9.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            item.displayName,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = palette.ink,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            "${item.file.extension.uppercase().ifBlank { "FILE" }} · ${formatBytes(item.sizeBytes)}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = palette.muted,
+                            maxLines = 1,
+                        )
+                    }
+                }
+            }
         }
     }
 }

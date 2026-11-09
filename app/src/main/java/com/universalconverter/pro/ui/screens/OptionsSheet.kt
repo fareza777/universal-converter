@@ -1,6 +1,7 @@
 package com.universalconverter.pro.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -11,25 +12,35 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.universalconverter.pro.core.convert.ConversionOptions
 import com.universalconverter.pro.core.convert.PdfPageSize
 import com.universalconverter.pro.core.convert.QualityPreset
@@ -52,6 +63,9 @@ fun OptionsSheet(
     val palette = UC.palette
     val families = state.draft.mapNotNull { it.target?.family }.toSet()
     val hasJpg = state.draft.any { it.target?.id == "jpg" }
+    val customPresets by viewModel.customPresets.collectAsStateWithLifecycle()
+    var showSaveDialog by remember { mutableStateOf(false) }
+    var presetName by remember { mutableStateOf("") }
     UCSheet(onDismiss = onDismiss) {
         Column(Modifier.fillMaxHeight(0.9f)) {
             Row(
@@ -75,6 +89,56 @@ fun OptionsSheet(
             ) {
                 Spacer(Modifier.height(8.dp))
                 PresetGrid(state.options.preset) { viewModel.setPreset(it) }
+                Spacer(Modifier.height(16.dp))
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text("My presets", style = MaterialTheme.typography.labelLarge, color = palette.ink, modifier = Modifier.weight(1f))
+                    Text(
+                        "Save current",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = palette.ember,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable {
+                                presetName = ""
+                                showSaveDialog = true
+                            }
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                if (customPresets.isEmpty()) {
+                    Text(
+                        "Save the current options as a reusable template for future batches.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = palette.muted,
+                    )
+                } else {
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        customPresets.forEach { preset ->
+                            Row(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(palette.ivory)
+                                    .border(1.dp, palette.line, RoundedCornerShape(12.dp))
+                                    .clickable { viewModel.applyCustomPreset(preset.id) }
+                                    .padding(horizontal = 12.dp, vertical = 9.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(Icons.Rounded.Bookmark, null, tint = palette.ember, modifier = Modifier.size(14.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    preset.name,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = palette.ink,
+                                    maxLines = 1,
+                                )
+                            }
+                        }
+                    }
+                }
                 if (state.draft.any { it.target?.id in setOf("jpg", "png", "webp", "tiff", "bmp", "gif", "pdf", "pdf_png", "pdf_jpg", "contact_sheet") }) {
                     Section("Image")
                     OptionChips(
@@ -200,6 +264,46 @@ fun OptionsSheet(
                 UCPrimaryButton("Done", onDismiss, modifier = Modifier.fillMaxWidth())
             }
         }
+    }
+    if (showSaveDialog) {
+        val palette = UC.palette
+        AlertDialog(
+            onDismissRequest = { showSaveDialog = false },
+            title = { Text("Save preset", style = MaterialTheme.typography.titleLarge, color = palette.ink) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "The current quality options are stored on this device.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = palette.muted,
+                    )
+                    OutlinedTextField(
+                        value = presetName,
+                        onValueChange = { presetName = it.take(40) },
+                        label = { Text("Preset name") },
+                        singleLine = true,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (viewModel.saveCustomPreset(presetName)) {
+                            showSaveDialog = false
+                        }
+                    },
+                    enabled = presetName.isNotBlank(),
+                ) {
+                    Text("Save", style = MaterialTheme.typography.labelLarge, color = palette.ember)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSaveDialog = false }) {
+                    Text("Cancel", style = MaterialTheme.typography.labelLarge, color = palette.muted)
+                }
+            },
+            containerColor = palette.ivory,
+        )
     }
 }
 

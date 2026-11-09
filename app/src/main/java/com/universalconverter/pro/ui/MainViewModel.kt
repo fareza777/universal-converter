@@ -63,6 +63,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val monetization = container.monetization
 
     val settings = settingsStore.settings
+    val customPresets = settingsStore.customPresets
+
+    init {
+        val resumed = queue.resumePending()
+        if (resumed > 0) {
+            showMessage("Resumed $resumed pending conversion${if (resumed == 1) "" else "s"}.")
+        }
+    }
     val billingState = billing.state
     val adState = monetization.state
     val queueItems: StateFlow<List<QueueItem>> = queue.items
@@ -452,6 +460,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setDefaultPreset(preset: QualityPreset) {
         settingsStore.update { it.copy(defaultPreset = preset) }
+    }
+
+    fun saveCustomPreset(name: String): Boolean {
+        val created = settingsStore.saveCustomPreset(name, _ui.value.options) ?: return false
+        showMessage("Preset “${created.name}” saved.")
+        return true
+    }
+
+    fun deleteCustomPreset(id: String) {
+        settingsStore.deleteCustomPreset(id)
+    }
+
+    fun applyCustomPreset(id: String) {
+        val preset = settingsStore.customPresets.value.firstOrNull { it.id == id } ?: return
+        _ui.update { it.copy(options = preset.options) }
+        showMessage("Applied ${preset.name}.")
     }
 
     fun setAutoSave(enabled: Boolean) {

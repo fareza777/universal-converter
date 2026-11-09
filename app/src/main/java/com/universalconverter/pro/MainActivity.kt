@@ -40,6 +40,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.universalconverter.pro.ads.BannerAd
+import com.universalconverter.pro.core.formats.FormatFamily
+import com.universalconverter.pro.core.formats.FormatRegistry
 import com.universalconverter.pro.data.JobStatus
 import com.universalconverter.pro.data.ThemeMode
 import com.universalconverter.pro.ui.MainViewModel
@@ -280,6 +282,15 @@ private fun AppContent(viewModel: MainViewModel, darkTheme: Boolean) {
                     onOpenQueue = { navController.navigate("queue") { launchSingleTop = true } },
                     onOpenSettings = { navController.navigate("settings") { launchSingleTop = true } },
                     onOpenStudio = { openStudio() },
+                    onOpenLibrary = { goTop("library") },
+                    onOpenRecent = { item ->
+                        when {
+                            item.isDirectory -> openFolder(item.file)
+                            FormatRegistry.findForFileName(item.displayName)?.family == FormatFamily.MESH ->
+                                openStudio(item.file.absolutePath)
+                            else -> goTop("library")
+                        }
+                    },
                 )
             }
             composable("library") {

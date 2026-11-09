@@ -1,10 +1,13 @@
 package com.universalconverter.pro.data
 
 import android.content.Context
+import com.universalconverter.pro.core.convert.ConversionOptions
 import com.universalconverter.pro.core.convert.QualityPreset
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import org.json.JSONArray
 
 enum class ThemeMode(val label: String) {
     SYSTEM("System"),
@@ -42,6 +45,9 @@ class SettingsStore(context: Context) {
     private val _settings = MutableStateFlow(load())
     val settings: StateFlow<AppSettings> = _settings.asStateFlow()
 
+    private val _customPresets = MutableStateFlow(loadPresets())
+    val customPresets: StateFlow<List<CustomPreset>> = _customPresets.asStateFlow()
+
     private fun load(): AppSettings {
         val theme = runCatching { ThemeMode.valueOf(prefs.getString("theme", ThemeMode.SYSTEM.name)!!) }
             .getOrDefault(ThemeMode.SYSTEM)
@@ -62,6 +68,38 @@ class SettingsStore(context: Context) {
             removeAdsPurchased = prefs.getBoolean("remove_ads_purchased", false),
             adFreeUntilEpochMs = prefs.getLong("ad_free_until", 0L),
         )
+    }
+
+    fun saveCustomPreset(name: String, options: ConversionOptions): CustomPreset? {
+        val cleanName = name.trim().take(40)
+        if (cleanName.isBlank()) return null
+        val preset = CustomPreset(name = cleanName, options = options)
+        _customPresets.update { current -> (listOf(preset) + current).take(30) }
+        persistPresets()
+        return preset
+    }
+
+    fun deleteCustomPreset(id: String) {
+        _customPresets.update { current -> current.filterNot { it.id == id } }
+        persistPresets()
+    }
+
+    private fun loadPresets(): List<CustomPreset> {
+        val raw = prefs.getString("custom_presets", null) ?: return emptyList()
+        return runCatching {
+            val array = JSONArray(raw)
+            buildList {
+                for (i in 0 until array.length()) {
+                    CustomPresetJson.fromJson(array.getJSONObject(i))?.let(::add)
+                }
+            }
+        }.getOrDefault(emptyList())
+    }
+
+    private fun persistPresets() {
+        val array = JSONArray()
+        _customPresets.value.forEach { array.put(CustomPresetJson.toJson(it)) }
+        prefs.edit().putString("custom_presets", array.toString()).apply()
     }
 
     fun update(transform: (AppSettings) -> AppSettings) {

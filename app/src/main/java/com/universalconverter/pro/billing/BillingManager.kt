@@ -74,6 +74,7 @@ class BillingManager(
             .enablePendingPurchases(
                 PendingPurchasesParams.newBuilder().enableOneTimeProducts().build(),
             )
+            .enableAutoServiceReconnection()
             .build()
         connect()
     }
@@ -100,9 +101,8 @@ class BillingManager(
             }
 
             override fun onBillingServiceDisconnected() {
-                _state.update {
-                    it.copy(loading = false, available = false, message = "Billing disconnected. Try again.")
-                }
+                // Auto-reconnection is enabled; the library retries on the next API call.
+                Log.i("Billing", "Play Billing service disconnected; waiting for auto-reconnect.")
             }
         })
     }
@@ -119,10 +119,17 @@ class BillingManager(
                 ),
             )
             .build()
-        billing.queryProductDetailsAsync(params) { result, details ->
+        billing.queryProductDetailsAsync(params) { result, queryResult ->
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                val details = queryResult.productDetailsList
                 product = details.firstOrNull()
                 val price = product?.oneTimePurchaseOfferDetails?.formattedPrice ?: "$4.99"
+                if (queryResult.unfetchedProductList.isNotEmpty()) {
+                    Log.w(
+                        "Billing",
+                        "Unfetched products: ${queryResult.unfetchedProductList.joinToString { it.productId }}",
+                    )
+                }
                 _state.update {
                     it.copy(
                         available = product != null,

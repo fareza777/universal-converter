@@ -28,7 +28,7 @@ android {
         applicationId = "com.universalconverter.pro"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0.0"
         vectorDrawables.useSupportLibrary = true
         manifestPlaceholders["admobAppId"] = adProp("admobAppId", "ca-app-pub-3940256099942544~3347511713")
@@ -130,7 +130,7 @@ dependencies {
     implementation("org.jsoup:jsoup:1.23.2")
 
     implementation("com.google.android.gms:play-services-ads:23.6.0")
-    implementation("com.android.billingclient:billing-ktx:7.1.1")
+    implementation("com.android.billingclient:billing-ktx:8.3.0")
     implementation("com.google.android.ump:user-messaging-platform:3.1.0")
 
     testImplementation("junit:junit:4.13.2")
